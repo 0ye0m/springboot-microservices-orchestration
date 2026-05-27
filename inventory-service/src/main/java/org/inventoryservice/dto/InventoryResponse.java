@@ -7,5 +7,11 @@ import lombok.Data;
 @AllArgsConstructor
 public class InventoryResponse {
 
+    private Integer productId;
+
+    private String productName;
+
     private boolean available;
+
+    private int quantity;
 }
