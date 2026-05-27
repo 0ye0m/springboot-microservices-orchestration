@@ -5,13 +5,11 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryResponse {
+public class ProductResponse {
 
     private Integer productId;
 
     private String productName;
-
-    private boolean available;
 
     private int quantity;
 }
