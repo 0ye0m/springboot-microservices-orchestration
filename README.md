@@ -1,64 +1,201 @@
-**Project Overview**
-- **Purpose**: A small microservices demo containing three Spring Boot services: Inventory, Order, and Payment. It demonstrates basic service separation, simple DTO-based communication, and local orchestration.
-- **Location**: This workspace contains `inventory-service`, `order-service`, and `payment-service` subprojects.
+# Spring Boot Microservices Orchestration Demo
 
-**Motivation**: I built these services to practice designing and implementing a lightweight microservices architecture using Spring Boot. The goals were to learn inter-service DTOs, configuration management, simple controller endpoints, and how to run multiple services locally.
+A practical microservices project built using Spring Boot to understand orchestration between multiple services.
 
-**What's Included**
-- **Inventory service**: REST controller for inventory queries; provides `InventoryResponse` DTO.
-- **Order service**: Accepts order requests, consults inventory, and coordinates payment requests/responses. Contains `OrderRequest`, `InventoryResponse`, `PaymentRequest`, and `PaymentResponse` DTOs.
-- **Payment service**: Simple payment controller that accepts payment requests and returns `PaymentResponse`.
+This project demonstrates how an Order Service coordinates with Inventory Service and Payment Service to complete an order workflow.
 
-**How Each Service Works**
-- **Inventory-service**: Exposes endpoints to check availability and return inventory metadata. Intended to be a read-only service for these examples.
-- **Order-service**: Acts as the orchestrator for order placement: it receives an `OrderRequest`, calls Inventory (to validate/reserve), then calls Payment (to charge) and returns an aggregated result.
-- **Payment-service**: Receives `PaymentRequest` and returns a success/failure `PaymentResponse`.
+---
 
-**How To Run Locally**
-- **Build & Run (Windows)**: From each service folder run:
+# Architecture
 
-```
-mvnw.cmd spring-boot:run
+```text
+Client
+   |
+   v
+Order Service (Orchestrator)
+   |
+   |----> Inventory Service
+   |
+   |----> Payment Service
 ```
 
-- **Build & Run (Unix / macOS)**: From each service folder run:
+---
 
+# Microservices Used
+
+| Service | Description | Port |
+|---|---|---|
+| Order Service | Main orchestrator controlling workflow | 8080 |
+| Inventory Service | Checks product availability | 8081 |
+| Payment Service | Handles payment processing | 8082 |
+
+---
+
+# Project Objective
+
+The goal of this project was to learn:
+
+- Microservices architecture
+- Service-to-service communication
+- Orchestration pattern
+- REST API communication
+- Spring Boot fundamentals
+- DTO usage
+- Inter-service workflow handling
+- Mockito unit testing
+
+---
+
+# What I Implemented
+
+## Inventory Service
+- Checks whether a product is available
+- Returns inventory status response
+
+### Example API
+```http
+GET /inventory/{productId}
 ```
-./mvnw spring-boot:run
+
+---
+
+## Payment Service
+- Simulates payment processing
+- Returns payment success or failure status
+
+### Example API
+```http
+POST /payment
 ```
 
-- **Notes**: Each service has its own `application.properties` in `src/main/resources/`. Check those files for configured ports and other runtime settings before starting multiple services.
+Request:
+```json
+{
+  "amount": 500
+}
+```
 
-**What I Did (Implementation Summary)**
-- **Defined DTOs**: Created simple POJOs for requests and responses so services can exchange typed payloads.
-- **Implemented Controllers**: Each service exposes minimal REST controllers to receive and respond to HTTP requests.
-- **Kept Services Decoupled**: Communication uses DTOs and HTTP; there is no shared persistence layer in this demo.
+---
 
-**Key Learnings**
-- **Service Boundaries**: Designing clear responsibilities (inventory vs. order vs. payment) simplifies reasoning and testing.
-- **DTO Design**: Small, focused DTOs make it easy to evolve service contracts and avoid leaking internal models.
-- **Local Orchestration**: Running multiple Spring Boot apps locally highlights issues like port conflicts and configuration isolation.
-- **Error Handling**: Orchestration requires careful error handling and compensation logic—important for reliability in distributed flows.
+## Order Service (Orchestrator)
+The main service responsible for:
 
-**Design Analysis & Decisions**
-- **Why HTTP + DTOs**: Simplicity and wide tooling support; acceptable for small demos and development environments.
-- **No Shared DB**: Avoids coupling and models a more realistic microservice architecture where each service owns its data.
-- **Synchronous Orchestration**: Order-service calls Inventory and Payment synchronously for simplicity. In production, consider asynchronous patterns for reliability and scaling (e.g., events, message queues).
+1. Receiving order request
+2. Calling Inventory Service
+3. Verifying stock availability
+4. Calling Payment Service
+5. Returning final order status
 
-**Trade-offs Observed**
-- **Synchronous Calls**: Easier to implement; harder to scale and more fragile under partial failures.
-- **No Resilience Patterns**: This demo lacks retries, timeouts, circuit breakers—these are important next steps for robustness.
+This service demonstrates the orchestration pattern in microservices.
 
-**Improvements & Next Steps**
-- **Add Resilience**: Introduce timeouts, retries, and circuit breakers (e.g., resilience4j or Spring Cloud Circuit Breaker).
-- **Add Observability**: Add structured logging, distributed tracing, and metrics to see cross-service flows.
-- **Automated Tests**: Add integration tests that start multiple services (testcontainers or embedded servers) to validate orchestration flows.
-- **Asynchronous Flow**: Replace synchronous payment with event-driven flow (e.g., using Kafka/RabbitMQ) to improve decoupling.
+### Example API
+```http
+POST /orders
+```
 
-**Troubleshooting**
-- **Port Conflicts**: If a service fails to start, check `src/main/resources/application.properties` for the server port and adjust as needed.
-- **Build Failures**: Run `mvn -e -X` for verbose Maven errors and ensure Java and Maven toolchains are correctly configured for your environment.
+Request:
+```json
+{
+  "productId": 1,
+  "amount": 500
+}
+```
 
-**References & Notes**
-- **Files of interest**: See each service's `src/main/java` and `src/main/resources/application.properties` for implementation details and runtime configuration.
-- **Contact**: This README documents what I implemented and learned while building these three services.
+---
+
+# Technologies Used
+
+- Java
+- Spring Boot
+- REST APIs
+- RestTemplate
+- Maven
+- Lombok
+- Mockito
+- JUnit 5
+
+---
+
+# Concepts Learned
+
+Through this project, I learned:
+
+## Microservices Communication
+How services communicate using REST APIs.
+
+## Orchestration Pattern
+How one central service controls the complete business workflow.
+
+## DTOs
+How data is transferred between services using DTO classes.
+
+## RestTemplate
+How to call external APIs from Spring Boot applications.
+
+## Unit Testing with Mockito
+How to mock dependencies and test orchestration logic without running actual services.
+
+## Mocking
+How fake responses can be used to isolate business logic during testing.
+
+---
+
+# Mockito Test Cases Added
+
+Unit tests were added for Order Service to test:
+
+- Successful order placement
+- Product out of stock scenario
+- Payment failure scenario
+
+Mocking was used to simulate responses from:
+- Inventory Service
+- Payment Service
+
+---
+
+# Project Flow
+
+```text
+1. Client places order
+2. Order Service checks inventory
+3. Inventory Service responds
+4. Order Service processes payment
+5. Payment Service responds
+6. Final order response returned
+```
+
+---
+
+# Sample Success Response
+
+```text
+ORDER SUCCESS
+```
+
+---
+
+# Future Improvements
+
+Possible future enhancements:
+
+- OpenFeign Client
+- Eureka Server
+- API Gateway
+- Kafka Integration
+- Saga Pattern
+- Docker
+- Kubernetes
+- Circuit Breaker (Resilience4j)
+
+---
+
+# Key Learning Outcome
+
+This project helped me understand how real-world backend systems coordinate multiple services to complete a business transaction using orchestration in microservices architecture.
+
+---
+
+# Author
+
+Om
