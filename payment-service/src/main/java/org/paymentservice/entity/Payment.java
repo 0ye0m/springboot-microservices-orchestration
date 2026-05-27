@@ -1,14 +1,19 @@
-package org.paymentservice.dto;
+package org.paymentservice.entity;
 
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "payments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentResponse {
+public class Payment {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
     private Long orderId;
@@ -17,9 +22,8 @@ public class PaymentResponse {
 
     private String paymentMethod;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     private LocalDateTime transactionTime;
-
-    private String message;
 }

@@ -1,20 +1,50 @@
 package org.paymentservice.controller;
 
-
-import org.paymentservice.dto.*;
+import jakarta.validation.Valid;
+import org.paymentservice.dto.PaymentRequest;
+import org.paymentservice.dto.PaymentResponse;
+import org.paymentservice.entity.Payment;
+import org.paymentservice.service.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/payments")
 public class PaymentController {
 
+    @Autowired
+    private PaymentService paymentService;
+
+    // Make Payment
     @PostMapping
-    public PaymentResponse makePayment(@RequestBody PaymentRequest request) {
+    public PaymentResponse makePayment(
+            @Valid @RequestBody PaymentRequest request) {
 
-        if(request.getAmount() > 0) {
-            return new PaymentResponse("SUCCESS");
-        }
+        return paymentService.makePayment(request);
+    }
 
-        return new PaymentResponse("FAILED");
+    // Get Payment By ID
+    @GetMapping("/{paymentId}")
+    public PaymentResponse getPayment(
+            @PathVariable Long paymentId) {
+
+        return paymentService.getPayment(paymentId);
+    }
+
+    // Get All Payments
+    @GetMapping
+    public List<Payment> getAllPayments() {
+
+        return paymentService.getAllPayments();
+    }
+
+    // Delete Payment
+    @DeleteMapping("/{paymentId}")
+    public String deletePayment(
+            @PathVariable Long paymentId) {
+
+        return paymentService.deletePayment(paymentId);
     }
 }
