@@ -1,59 +1,23 @@
 package org.orderservice.controller;
 
-
-import org.orderservice.dto.*;
+import jakarta.validation.Valid;
+import org.orderservice.dto.OrderRequest;
+import org.orderservice.dto.OrderResponse;
+import org.orderservice.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private OrderService orderService;
 
     @PostMapping
-    public String placeOrder(@RequestBody OrderRequest orderRequest) {
+    public OrderResponse placeOrder(
+            @Valid @RequestBody OrderRequest request) {
 
-        // STEP 1: Check Inventory
-
-        String inventoryUrl =
-                "http://localhost:8081/inventory/" +
-                        orderRequest.getProductId();
-
-        InventoryResponse inventoryResponse =
-                restTemplate.getForObject(
-                        inventoryUrl,
-                        InventoryResponse.class
-                );
-
-        if(inventoryResponse == null ||
-                !inventoryResponse.isAvailable()) {
-
-            return "Product Out Of Stock";
-        }
-
-        // STEP 2: Payment
-
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setAmount(orderRequest.getAmount());
-
-        PaymentResponse paymentResponse =
-                restTemplate.postForObject(
-                        "http://localhost:8082/payment",
-                        paymentRequest,
-                        PaymentResponse.class
-                );
-
-        if(paymentResponse == null ||
-                !"SUCCESS".equals(paymentResponse.getStatus())) {
-
-            return "Payment Failed";
-        }
-
-        // STEP 3: Confirm Order
-
-        return "Order Placed Successfully";
+        return orderService.placeOrder(request);
     }
 }
